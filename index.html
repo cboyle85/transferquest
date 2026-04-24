@@ -878,8 +878,6 @@ function checkStreak(){
 // ══════════════════════════════════════════════
 function renderWelcome(){
   const hour=new Date().getHours();
-  const greeting=hour<12?'Good morning':'hour<17?'Good afternoon':'Good evening';
-  // simple version:
   const g=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   document.getElementById('welcomeMsg').textContent=g+', '+state.username+'!';
   const band=calcBand();

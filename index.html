@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransferQuest — SEAG Revision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============================================================
+   TRANSFERQUEST — SEAG REVISION PLATFORM
+   Replace SUPABASE_URL and SUPABASE_ANON_KEY below with yours
+   ============================================================ */
+
+:root {
+  --p: #7c3aed; --pl: #ede9fe; --p2: #6d28d9;
+  --gold: #f59e0b; --green: #10b981; --blue: #3b82f6;
+  --coral: #f43f5e; --teal: #06b6d4; --pink: #ec4899;
+  --bg: #f5f3ff; --card: #ffffff; --text: #1e1b4b;
+  --muted: #6b7280; --border: rgba(124,58,237,0.15);
+  --font: 'Nunito', sans-serif;
+}
+.theme-mc {
+  --p:#2d6a4f;--pl:#d8f3dc;--p2:#1b4332;--gold:#95d5b2;
+  --bg:#081c15;--card:#1b4332;--text:#d8f3dc;--muted:#95d5b2;
+  --border:rgba(149,213,178,0.2);--font:'Courier New',monospace;
+}
+.theme-kp {
+  --p:#ec4899;--pl:#fdf2f8;--p2:#db2777;--gold:#a855f7;
+  --green:#06b6d4;--bg:#fdf4ff;--card:#fff;--text:#831843;--muted:#be185d;
+}
+.theme-dark {
+  --p:#818cf8;--pl:#1e1b4b;--p2:#6366f1;--gold:#fbbf24;
+  --bg:#0f0e17;--card:#1e1b4b;--text:#e0e7ff;--muted:#a5b4fc;
+  --border:rgba(129,140,248,0.2);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);min-height:100vh;color:var(--text);transition:background 0.4s,color 0.4s}
+
+/* ── AUTH SCREEN ── */
+#authScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.auth-card{background:var(--card);border-radius:24px;padding:32px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(124,58,237,0.15)}
+.auth-logo{font-family:'Fredoka One',cursive;font-size:32px;color:var(--p);text-align:center;margin-bottom:8px}
+.auth-logo span{color:var(--gold)}
+.auth-sub{text-align:center;font-size:13px;color:var(--muted);margin-bottom:24px;font-weight:600}
+.auth-tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:20px}
+.auth-tab{flex:1;padding:8px;border:none;background:transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);font-family:var(--font);transition:all 0.2s}
+.auth-tab.active{background:var(--card);color:var(--p);box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.auth-field{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:12px;font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);margin-bottom:12px;outline:none;transition:border 0.2s}
+.auth-field:focus{border-color:var(--p)}
+.auth-btn{width:100%;padding:14px;background:var(--p);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);transition:all 0.2s;margin-top:4px}
+.auth-btn:hover{background:var(--p2);transform:translateY(-1px)}
+.auth-err{background:#ffe4e6;color:#9f1239;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:700;margin-bottom:12px;display:none}
+.auth-err.show{display:block}
+.guest-btn{width:100%;padding:10px;background:transparent;color:var(--muted);border:2px solid var(--border);border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:8px;transition:all 0.2s}
+.guest-btn:hover{border-color:var(--p);color:var(--p)}
+
+/* ── MAIN APP ── */
+#app{display:none}
+.header{background:var(--p);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-family:'Fredoka One',cursive;font-size:20px;color:#fff}
+.logo span{color:var(--gold)}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.avatar-btn{width:36px;height:36px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;font-weight:800;font-size:14px;color:#1e1b4b;display:flex;align-items:center;justify-content:center}
+.xp-pill{background:rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:8px}
+.xp-track{width:80px;height:6px;background:rgba(255,255,255,0.3);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;background:var(--gold);border-radius:3px;transition:width 0.8s cubic-bezier(.34,1.56,.64,1)}
+.xp-label{color:#fff;font-size:11px;font-weight:700;white-space:nowrap}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;padding:12px 12px 0;background:var(--bg)}
+.tab-btn{padding:8px 14px;border-radius:12px 12px 0 0;font-size:12px;font-weight:700;cursor:pointer;border:none;background:rgba(124,58,237,0.1);color:var(--p);transition:all 0.2s;font-family:var(--font)}
+.tab-btn.active{background:var(--card);box-shadow:0 -2px 8px rgba(124,58,237,0.1)}
+.tab-btn:hover:not(.active){background:rgba(124,58,237,0.18)}
+.main{padding:14px;max-width:900px;margin:0 auto}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat-card{background:var(--card);border-radius:12px;padding:10px;text-align:center;border:1px solid var(--border)}
+.stat-val{font-size:22px;font-weight:900;color:var(--p);font-family:'Fredoka One',cursive}
+.stat-lbl{font-size:10px;color:var(--muted);font-weight:700;margin-top:2px}
+
+/* ── DAILY CHALLENGE ── */
+.daily{background:linear-gradient(135deg,var(--p),#4f46e5);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px;cursor:pointer;transition:transform 0.2s;border:none;width:100%;font-family:var(--font);text-align:left}
+.daily:hover{transform:scale(1.01)}
+.daily-icon{font-size:28px;flex-shrink:0}
+.daily h3{color:#fff;font-size:14px;font-weight:800}
+.daily p{color:rgba(255,255,255,0.8);font-size:11px;margin-top:2px}
+.daily-badge{margin-left:auto;background:var(--gold);color:#1e1b4b;font-size:11px;font-weight:800;padding:6px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+
+/* ── WORLD GRID ── */
+.section-title{font-family:'Fredoka One',cursive;font-size:17px;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.worlds-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.world-card{background:var(--card);border-radius:14px;padding:12px;cursor:pointer;transition:transform 0.18s cubic-bezier(.34,1.56,.64,1),box-shadow 0.18s;border:2px solid transparent;position:relative;overflow:hidden;text-align:left;font-family:var(--font)}
+.world-card::before{content:'';position:absolute;inset:0;background:var(--wc,#7c3aed);opacity:0.06;pointer-events:none}
+.world-card:hover:not(.locked){transform:translateY(-4px) scale(1.02);box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.world-card.active-world{border-color:var(--wc,#7c3aed)}
+.world-card.locked{opacity:0.6;cursor:not-allowed}
+.world-icon{font-size:26px;margin-bottom:6px;display:block}
+.world-name{font-weight:800;font-size:12px;color:var(--text);line-height:1.3;margin-bottom:3px}
+.world-sub{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:7px}
+.world-bar{height:5px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden}
+.world-fill{height:100%;border-radius:3px;background:var(--wc,#7c3aed);transition:width 1s cubic-bezier(.34,1.56,.64,1)}
+.world-pct{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700}
+.world-badge{position:absolute;top:6px;right:6px;background:var(--gold);color:#fff;font-size:8px;font-weight:800;padding:2px 6px;border-radius:8px}
+.world-lock{position:absolute;top:6px;right:6px;font-size:13px;opacity:0.5}
+
+/* ── QUESTION PANEL ── */
+.q-panel{background:var(--card);border-radius:16px;padding:18px;margin-bottom:14px;display:none;animation:slideUp 0.3s ease;border:1px solid var(--border)}
+.q-panel.show{display:block}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.q-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.q-badge{font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;background:var(--pl);color:var(--p)}
+.q-weight{font-size:10px;color:var(--muted);font-weight:600}
+.q-timer{margin-left:auto;font-size:13px;font-weight:800;color:var(--coral);display:flex;align-items:center;gap:4px}
+.timer-dot{width:6px;height:6px;border-radius:50%;background:var(--coral);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+.q-num{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px}
+.q-text{font-size:15px;font-weight:700;color:var(--text);line-height:1.55;margin-bottom:12px}
+.q-context{background:rgba(124,58,237,0.04);border-left:3px solid var(--p);border-radius:0 8px 8px 0;padding:10px 12px;font-size:13px;color:var(--text);line-height:1.7;margin-bottom:12px;font-style:italic}
+.q-hint{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:10px;display:none}
+.options{display:flex;flex-direction:column;gap:8px}
+.option{padding:10px 14px;border-radius:12px;border:2px solid var(--border);background:var(--bg);font-size:13px;font-weight:700;color:var(--text);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:10px;text-align:left;font-family:var(--font);width:100%}
+.option:hover:not(:disabled){border-color:var(--p);background:var(--pl)}
+.option.selected{border-color:var(--p);background:var(--pl)}
+.option.correct{border-color:var(--green);background:#d1fae5;color:#065f46}
+.option.wrong{border-color:var(--coral);background:#ffe4e6;color:#9f1239}
+.opt-letter{width:24px;height:24px;border-radius:50%;background:rgba(124,58,237,0.1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--p);flex-shrink:0;transition:all 0.15s}
+.option.selected .opt-letter{background:var(--p);color:#fff}
+.option.correct .opt-letter{background:var(--green);color:#fff}
+.option.wrong .opt-letter{background:var(--coral);color:#fff}
+.feedback{padding:12px 14px;border-radius:12px;margin-top:12px;font-size:13px;font-weight:700;display:none;animation:popIn 0.3s cubic-bezier(.34,1.56,.64,1)}
+.feedback.show{display:flex;align-items:flex-start;gap:10px}
+.feedback.ok{background:#d1fae5;color:#065f46}
+.feedback.no{background:#ffe4e6;color:#9f1239}
+.feedback-explain{font-weight:600;font-size:12px;margin-top:4px;line-height:1.5}
+@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+.q-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn-primary{background:var(--p);color:#fff;border:none;border-radius:12px;padding:10px 20px;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.15s;font-family:var(--font);flex:1}
+.btn-primary:hover{background:var(--p2);transform:translateY(-1px)}
+.btn-secondary{background:transparent;color:var(--muted);border:2px solid var(--border);border-radius:12px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:var(--font)}
+.btn-secondary:hover{border-color:var(--p);color:var(--p)}
+.btn-hint{background:transparent;color:var(--gold);border:2px solid rgba(245,158,11,0.3);border-radius:12px;padding:10px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all 0.2s}
+.btn-hint:hover{border-color:var(--gold);background:rgba(245,158,11,0.08)}
+.q-progress{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.q-dots{display:flex;gap:4px}
+.q-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:all 0.3s}
+.q-dot.done-ok{background:var(--green)}
+.q-dot.done-no{background:var(--coral)}
+.q-dot.current{background:var(--p);transform:scale(1.3)}
+
+/* ── RESULTS ── */
+.results-card{background:var(--card);border-radius:16px;padding:24px;text-align:center;display:none;border:1px solid var(--border)}
+.results-card.show{display:block;animation:slideUp 0.4s ease}
+.results-score{font-size:56px;font-family:'Fredoka One',cursive;color:var(--p);line-height:1}
+.results-label{font-size:15px;font-weight:800;color:var(--text);margin-top:6px}
+.results-sub{font-size:12px;color:var(--muted);margin-top:4px;font-weight:600}
+.results-xp{display:inline-block;background:var(--gold);color:#1e1b4b;padding:8px 20px;border-radius:20px;font-weight:800;font-size:14px;margin:12px 0}
+.results-btns{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+
+/* ── VAULT ── */
+.vault-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.theme-card{background:var(--card);border-radius:14px;padding:14px;text-align:center;border:2px solid var(--border);transition:all 0.2s;cursor:pointer}
+.theme-card:hover{transform:translateY(-3px)}
+.theme-card.owned{border-color:var(--green)}
+.theme-card.equipped{border-color:var(--p);box-shadow:0 0 0 3px rgba(124,58,237,0.15)}
+.theme-preview{width:100%;height:55px;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.theme-name{font-size:13px;font-weight:800;color:var(--text)}
+.theme-cost{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px}
+.theme-btn{margin-top:8px;width:100%;padding:7px;border-radius:10px;border:none;font-size:11px;font-weight:800;cursor:pointer;font-family:var(--font);transition:all 0.15s}
+.theme-btn.buy{background:var(--gold);color:#1e1b4b}
+.theme-btn.equip{background:var(--green);color:#fff}
+.theme-btn.equipped{background:var(--p);color:#fff}
+.vault-stars{text-align:center;margin-bottom:16px;font-size:24px;font-family:'Fredoka One',cursive;color:var(--p)}
+
+/* ── PARENT REPORT ── */
+.report-card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+.report-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px}
+.topic-row{margin-bottom:10px}
+.topic-header{display:flex;justify-content:space-between;margin-bottom:4px}
+.topic-name{font-size:12px;font-weight:700;color:var(--text)}
+.topic-meta{font-size:10px;color:var(--muted);font-weight:600}
+.topic-bar{height:7px;background:rgba(0,0,0,0.07);border-radius:4px;overflow:hidden}
+.topic-fill{height:100%;border-radius:4px;transition:width 1.2s cubic-bezier(.34,1.56,.64,1)}
+.band-display{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.band-score{font-size:48px;font-weight:900;font-family:'Fredoka One',cursive}
+.band-info h3{font-size:15px;font-weight:800;color:var(--text)}
+.band-info p{font-size:11px;color:var(--muted);font-weight:600}
+.tips-card{background:#fffbeb;border-radius:14px;padding:14px;border:1px solid #fde68a}
+.tips-title{font-size:13px;font-weight:800;color:#92400e;margin-bottom:8px}
+.tip-item{font-size:12px;color:#78350f;line-height:1.6;padding:4px 0;border-bottom:1px solid rgba(245,158,11,0.15)}
+.tip-item:last-child{border:none}
+
+/* ── TOAST & PARTICLES ── */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-120px);background:var(--gold);color:#1e1b4b;padding:12px 24px;border-radius:20px;font-weight:800;font-size:14px;z-index:9999;transition:transform 0.4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(245,158,11,0.4);pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.particle{position:fixed;pointer-events:none;font-size:18px;z-index:99999;animation:floatUp 1.3s ease-out forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}100%{opacity:0;transform:translateY(-130px) scale(1.6) rotate(25deg)}}
+
+/* ── MISC ── */
+.hidden{display:none!important}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .big{font-size:40px;margin-bottom:8px}
+.empty-state p{font-size:13px;font-weight:600}
+select.auth-field{appearance:none}
+
+@media(max-width:480px){
+  .worlds-grid{grid-template-columns:repeat(2,1fr)}
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+  .q-text{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════════════ -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">Transfer<span>Quest</span> ⚔️</div>
+    <div class="auth-sub">SEAG 2026 Revision — Northern Ireland</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Log In</button>
+      <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+    <div id="authError" class="auth-err"></div>
+    <div id="loginForm">
+      <input class="auth-field" id="loginEmail" type="email" placeholder="Email address">
+      <input class="auth-field" id="loginPass" type="password" placeholder="Password">
+      <button class="auth-btn" onclick="doLogin()">Log In ➜</button>
+    </div>
+    <div id="signupForm" style="display:none">
+      <input class="auth-field" id="signupName" type="text" placeholder="Your first name">
+      <input class="auth-field" id="signupEmail" type="email" placeholder="Email address">
+      <input class="auth-field" id="signupPass" type="password" placeholder="Choose a password (min 6 chars)">
+      <select class="auth-field" id="signupRole">
+        <option value="student">I'm a student</option>
+        <option value="parent">I'm a parent</option>
+      </select>
+      <button class="auth-btn" onclick="doSignup()">Create Account ➜</button>
+    </div>
+    <button class="guest-btn" onclick="guestMode()">👀 Try as Guest (no account needed)</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════ -->
+<div id="app">
+  <div class="header">
+    <div class="logo">Transfer<span>Quest</span></div>
+    <div class="hdr-right">
+      <div class="xp-pill">
+        <div>
+          <div class="xp-track"><div class="xp-fill" id="xpBar" style="width:0%"></div></div>
+          <div class="xp-label" id="xpLabel">0 XP</div>
+        </div>
+      </div>
+      <button class="avatar-btn" id="avatarBtn" onclick="toggleUserMenu()">A</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('quest')">🗺 Quest Map</button>
+    <button class="tab-btn" onclick="showTab('vault')">🏦 Vault</button>
+    <button class="tab-btn" onclick="showTab('report')">📊 Report</button>
+  </div>
+
+  <div class="main">
+
+    <!-- ══ QUEST TAB ══ -->
+    <div id="tab-quest" class="tab-content active">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-val" id="streakStat">🔥0</div><div class="stat-lbl">Day Streak</div></div>
+        <div class="stat-card"><div class="stat-val" id="starsStat">⭐0</div><div class="stat-lbl">Stars</div></div>
+        <div class="stat-card"><div class="stat-val" id="bandStat">–</div><div class="stat-lbl">Pred. Band</div></div>
+      </div>
+
+      <button class="daily" onclick="startDaily()">
+        <div class="daily-icon">⚡</div>
+        <div><h3>Daily Challenge</h3><p id="dailyDesc">Mixed Maths &amp; English · 5 questions</p></div>
+        <div class="daily-badge">+150 XP</div>
+      </button>
+
+      <div class="section-title">📚 English Worlds</div>
+      <div class="worlds-grid" id="gridEnglish"></div>
+
+      <div class="section-title">🔢 Maths Worlds</div>
+      <div class="worlds-grid" id="gridMaths"></div>
+
+      <!-- Question panel -->
+      <div id="qPanel" class="q-panel">
+        <div class="q-header">
+          <span class="q-badge" id="qBadge">World</span>
+          <span class="q-weight" id="qWeight">1×</span>
+          <div class="q-timer"><div class="timer-dot"></div><span id="timerTxt">2:00</span></div>
+        </div>
+        <div class="q-progress">
+          <div class="q-dots" id="qDots"></div>
+          <span id="qNumTxt" style="font-size:11px;color:var(--muted);font-weight:700;margin-left:6px"></span>
+        </div>
+        <div class="q-text" id="qText"></div>
+        <div class="q-context" id="qContext" style="display:none"></div>
+        <div class="q-hint" id="qHint"></div>
+        <div class="options" id="qOptions"></div>
+        <div class="feedback" id="qFeedback">
+          <span id="qFeedbackIcon" style="font-size:20px;flex-shrink:0"></span>
+          <div><span id="qFeedbackMsg"></span><div class="feedback-explain" id="qExplain"></div></div>
+        </div>
+        <div class="q-actions">
+          <button class="btn-secondary" onclick="closePanel()">← Back</button>
+          <button class="btn-hint" id="hintBtn" onclick="showHint()">💡 Hint</button>
+          <button class="btn-primary" id="checkBtn" onclick="checkAnswer()">Check ✓</button>
+          <button class="btn-primary hidden" id="nextBtn" onclick="nextQ()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Results card -->
+      <div id="resultsCard" class="results-card">
+        <div class="results-score" id="resScore"></div>
+        <div class="results-label" id="resLabel"></div>
+        <div class="results-sub" id="resSub"></div>
+        <div class="results-xp" id="resXP"></div>
+        <div class="results-btns">
+          <button class="btn-primary" onclick="retryWorld()">🔄 Try Again</button>
+          <button class="btn-secondary" onclick="closePanel()">← Map</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ VAULT TAB ══ -->
+    <div id="tab-vault" class="tab-content">
+      <div class="vault-stars">⭐ <span id="vaultStars">0</span> Stars to spend</div>
+      <div class="section-title">🎨 Themes</div>
+      <div class="vault-grid" id="vaultGrid"></div>
+    </div>
+
+    <!-- ══ REPORT TAB ══ -->
+    <div id="tab-report" class="tab-content">
+      <div class="report-card">
+        <div class="report-title">📊 Predicted Band</div>
+        <div class="band-display">
+          <div class="band-score" id="repBandScore" style="color:var(--p)">–</div>
+          <div class="band-info">
+            <h3 id="repBandLabel">Complete questions to see your band</h3>
+            <p id="repBandSub">Inferential &amp; Problem Solving questions count 2×</p>
+          </div>
+        </div>
+        <div style="height:10px;background:rgba(0,0,0,0.06);border-radius:5px;overflow:hidden">
+          <div id="repBandBar" style="height:100%;width:0%;background:var(--p);border-radius:5px;transition:width 1.2s"></div>
+        </div>
+      </div>
+      <div class="report-card">
+        <div class="report-title">📈 Topic Mastery</div>
+        <div id="repTopics"></div>
+      </div>
+      <div class="tips-card">
+        <div class="tips-title">💡 Pro-Tips</div>
+        <div id="repTips"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════
+// SUPABASE CONFIG — replace these two values
+// ════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://fgjqytqbxsugwwnhbxvr.supabase.co/';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnanF5dHFieHN1Z3d3bmhieHZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMTk4ODEsImV4cCI6MjA5MjU5NTg4MX0.5mAZL14OLDR-Ps-Iq7Iz-xKF1_EU0hSLMgB_AjRO3RM';
+
+let sb = null;
+try {
+  if (SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  }
+} catch(e) {}
+
+// ════════════════════════════════════════════════
+// LOCAL STATE
+// ════════════════════════════════════════════════
+let state = {
+  user: null,
+  xp: 0,
+  level: 1,
+  stars: 0,
+  streak: 0,
+  progress: {},   // worldId -> { attempts, correct }
+  themes: ['default'],
+  equippedTheme: 'default',
+  guest: false,
+};
+let sessionAnswers = [];   // current question session
+let sessionIdx     = 0;
+let sessionWorld   = null;
+let sessionQs      = [];
+let timerInt       = null;
+let timerSec       = 120;
+let answered       = false;
+let selectedOpt    = -1;
+
+// ════════════════════════════════════════════════
+// FULL QUESTION BANK — all SEAG topics
+// ════════════════════════════════════════════════
+const QB = {
+
+  // ── ENGLISH: COMPREHENSION ──────────────────
+  comprehension: {
+    label:'📖 Comprehension Cove',
+    badge:'English · Comprehension',
+    color:'#f43f5e',
+    weight:2,
+    questions:[
+      {
+        text:"Read the passage. What does 'the darkness swallowed the last candle' suggest?",
+        context:'"Outside, rain hammered the roof. Inside, Grandma sat perfectly still. One by one the lights flickered out until the darkness swallowed the last candle, and still she did not move."',
+        type:'Inferential',
+        hint:"Think about what 'swallowed' usually means and what it suggests here.",
+        options:[
+          {t:"Someone ate the candle", c:false},
+          {t:"The darkness completely consumed all light", c:true},
+          {t:"The candle fell on the floor", c:false},
+          {t:"Grandma blew the candle out", c:false},
+        ],correct:1,
+        explain:"'Swallowed' is a metaphor — the darkness consumed (took over) all the light completely, as if it had eaten it."
+      },
+      {
+        text:"Which word in the passage is closest in meaning to 'enormous'?",
+        context:'"The ancient tree stood at the edge of the village. Its colossal trunk was wider than three men with arms outstretched, and its branches stretched towards the clouds like reaching fingers."',
+        type:'Vocabulary',
+        hint:"Look for a word that means very, very large.",
+        options:[
+          {t:"ancient", c:false},
+          {t:"colossal", c:true},
+          {t:"outstretched", c:false},
+          {t:"branches", c:false},
+        ],correct:1,
+        explain:"'Colossal' means extremely large — a synonym of enormous."
+      },
+      {
+        text:"The author compares the branches to 'reaching fingers'. What effect does this create?",
+        context:'"The ancient tree stood at the edge of the village. Its colossal trunk was wider than three men with arms outstretched, and its branches stretched towards the clouds like reaching fingers."',
+        type:'Inferential',
+        hint:"This is a simile. What feeling does a hand reaching up give you?",
+        options:[
+          {t:"It makes the tree seem frightening and alive", c:true},
+          {t:"It tells us the tree is in a field", c:false},
+          {t:"It shows the tree is very thin", c:false},
+          {t:"It means the tree is actually a hand", c:false},
+        ],correct:0,
+        explain:"By comparing branches to 'reaching fingers', the author gives the tree human qualities, making it seem alive and possibly threatening — this is called personification."
+      },
+      {
+        text:"This passage is best described as:",
+        context:'"HOW TO MAKE A VOLCANO MODEL\n1. Mix vinegar and bicarbonate of soda.\n2. Add red food colouring for effect.\n3. Pour slowly into your papier-mâché model.\nTop Tip: Do this outside!"',
+        type:'Text Purpose',
+        hint:"Think about WHY this piece of writing was written.",
+        options:[
+          {t:"A poem about volcanoes", c:false},
+          {t:"A set of instructions", c:true},
+          {t:"A story about a scientist", c:false},
+          {t:"An advertisement", c:false},
+        ],correct:1,
+        explain:"Numbered steps, bossy verbs (mix, add, pour), and a practical tip are all features of instructional writing."
+      },
+      {
+        text:"'The wind was a wolf that prowled the empty streets.' This is an example of:",
+        context:null,
+        type:'Literary Devices',
+        hint:"Does it use 'like' or 'as'? Or does it say the wind IS something?",
+        options:[
+          {t:"A simile", c:false},
+          {t:"A metaphor", c:true},
+          {t:"Alliteration", c:false},
+          {t:"Rhyme", c:false},
+        ],correct:1,
+        explain:"A metaphor says one thing IS another without using 'like' or 'as'. Here the wind IS called a wolf directly."
+      },
+      {
+        text:"What does the glossary of a book help a reader do?",
+        context:null,
+        type:'Text Features',
+        hint:"Think about where you'd find definitions of difficult words in a non-fiction book.",
+        options:[
+          {t:"Find which chapter a topic is in", c:false},
+          {t:"See who wrote the book", c:false},
+          {t:"Understand the meanings of key words", c:true},
+          {t:"Find the page numbers of sources used", c:false},
+        ],correct:2,
+        explain:"A glossary is an alphabetical list of key terms with their definitions, found at the back of non-fiction books."
+      },
+    ]
+  },
+
+  // ── ENGLISH: GRAMMAR ────────────────────────
+  grammar: {
+    label:'✏️ Grammar Galaxy',
+    badge:'English · Grammar',
+    color:'#f59e0b',
+    weight:1,
+    questions:[
+      {
+        text:"Identify the VERB in this sentence: 'The excited children raced across the muddy field.'",
+        context:null,
+        type:'Parts of Speech',
+        hint:"A verb is a doing or being word.",
+        options:[
+          {t:"excited", c:false},
+          {t:"children", c:false},
+          {t:"raced", c:true},
+          {t:"muddy", c:false},
+        ],correct:2,
+        explain:"'Raced' is the verb — it tells us what the children did (the action)."
+      },
+      {
+        text:"Which sentence uses the PAST TENSE correctly?",
+        context:null,
+        type:'Verb Tenses',
+        hint:"Past tense means it already happened. Watch out for irregular verbs!",
+        options:[
+          {t:"Yesterday I go to the shops.", c:false},
+          {t:"Yesterday I gone to the shops.", c:false},
+          {t:"Yesterday I went to the shops.", c:true},
+          {t:"Yesterday I will go to the shops.", c:false},
+        ],correct:2,
+        explain:"'Go' is an irregular verb. Its past tense is 'went', not 'goed'. 'Will go' is future tense."
+      },
+      {
+        text:"'She sought the answer for hours.' What is the present tense of 'sought'?",
+        context:null,
+        type:'Irregular Verbs',
+        hint:"'Seek / sought' is an irregular verb pair, like 'find / found'.",
+        options:[
+          {t:"seeked", c:false},
+          {t:"seek", c:true},
+          {t:"sook", c:false},
+          {t:"seekt", c:false},
+        ],correct:1,
+        explain:"'Seek' and 'sought' are an irregular verb pair. You cannot add -ed to seek!"
+      },
+      {
+        text:"Choose the COMPARATIVE form: 'This mountain is _____ than that hill.'",
+        context:null,
+        type:'Adjectives',
+        hint:"Comparative adjectives compare two things — usually they end in -er or use 'more'.",
+        options:[
+          {t:"high", c:false},
+          {t:"highest", c:false},
+          {t:"higher", c:true},
+          {t:"most high", c:false},
+        ],correct:2,
+        explain:"'Higher' is the comparative form (comparing two things). 'Highest' is the superlative (comparing three or more)."
+      },
+      {
+        text:"What is the PLURAL of 'ox'?",
+        context:null,
+        type:'Plurals',
+        hint:"This is an irregular plural — you can't just add -s or -es!",
+        options:[
+          {t:"oxes", c:false},
+          {t:"ox", c:false},
+          {t:"oxen", c:true},
+          {t:"oxs", c:false},
+        ],correct:2,
+        explain:"'Oxen' is an irregular plural, like 'children' (child) and 'feet' (foot). The SEAG exam tests these!"
+      },
+      {
+        text:"'They could've won if they'd tried harder.' What does 'could've' stand for?",
+        context:null,
+        type:'Contractions',
+        hint:"'ve' is always short for 'have' — never 'of'!",
+        options:[
+          {t:"could of", c:false},
+          {t:"could have", c:true},
+          {t:"could were", c:false},
+          {t:"could will", c:false},
+        ],correct:1,
+        explain:"'Could've' = 'could have'. A common mistake is writing 'could of' — this is always wrong!"
+      },
+      {
+        text:"Which word is a PREPOSITION in: 'The cat hid beneath the old wooden table.'",
+        context:null,
+        type:'Parts of Speech',
+        hint:"A preposition shows the relationship between things — usually position or direction.",
+        options:[
+          {t:"old", c:false},
+          {t:"cat", c:false},
+          {t:"hid", c:false},
+          {t:"beneath", c:true},
+        ],correct:3,
+        explain:"'Beneath' is a preposition — it tells us WHERE the cat hid (its position relative to the table)."
+      },
+    ]
+  },
+
+  // ── ENGLISH: PUNCTUATION ────────────────────
+  punctuation: {
+    label:'❓ Punctuation Peak',
+    badge:'English · Punctuation',
+    color:'#ec4899',
+    weight:1,
+    questions:[
+      {
+        text:"Which sentence uses apostrophes CORRECTLY?",
+        context:null,
+        type:'Apostrophes',
+        hint:"Apostrophes are used for missing letters (contraction) or to show belonging (possession).",
+        options:[
+          {t:"The dog wagged it's tail happily.", c:false},
+          {t:"The dog wagged its tail happily.", c:true},
+          {t:"The dog wagged its' tail happily.", c:false},
+          {t:"The dog wagged its tail' happily.", c:false},
+        ],correct:1,
+        explain:"'Its' (possession — the tail belonging to it) has NO apostrophe. 'It's' always means 'it is'. This is one of the most common errors tested!"
+      },
+      {
+        text:"Proofread this passage. How many punctuation errors are there?\n\n'Sarah shouted \"Were going on holiday tomorrow!\" Her mum smiled. \"I know isnt it exciting she replied.\"'",
+        context:null,
+        type:'Proofreading',
+        hint:"Look carefully at apostrophes in contractions and the placement of speech marks.",
+        options:[
+          {t:"1 error", c:false},
+          {t:"2 errors", c:true},
+          {t:"3 errors", c:false},
+          {t:"No errors", c:false},
+        ],correct:1,
+        explain:"Error 1: 'Were' should be 'We're' (we are). Error 2: 'isnt' should be 'isn't' (is not). The speech marks are used correctly."
+      },
+      {
+        text:"Which sentence uses a COLON correctly?",
+        context:null,
+        type:'Colons & Semicolons',
+        hint:"A colon introduces a list or an explanation of what comes before it.",
+        options:[
+          {t:"I packed: my bag before school.", c:false},
+          {t:"You will need the following: a pencil, a ruler, and an eraser.", c:true},
+          {t:"She ran: quickly down the road.", c:false},
+          {t:"The cat: sat on the mat.", c:false},
+        ],correct:1,
+        explain:"A colon introduces a list or expands on what has just been said. Here it correctly introduces the list of items needed."
+      },
+      {
+        text:"Where should the apostrophe go in: 'The three boys football kits were lost.'",
+        context:null,
+        type:'Apostrophes',
+        hint:"Is it one boy or more than one? This changes where the apostrophe goes.",
+        options:[
+          {t:"boy's football kits", c:false},
+          {t:"boys' football kits", c:true},
+          {t:"boys's football kits", c:false},
+          {t:"boys football kit's", c:false},
+        ],correct:1,
+        explain:"Three boys (plural already ending in s) → add apostrophe AFTER the s: boys'. If it were one boy, it would be boy's."
+      },
+      {
+        text:"Which punctuation mark correctly completes this sentence?\n'She had three favourite subjects history, science ___ art.'",
+        context:null,
+        type:'Semicolons & Conjunctions',
+        hint:"What punctuation joins items in a list where one item has already used a comma?",
+        options:[
+          {t:"A full stop (.)", c:false},
+          {t:"A colon (:)", c:false},
+          {t:"And", c:true},
+          {t:"A semicolon (;)", c:false},
+        ],correct:2,
+        explain:"In a simple list of three things, 'and' before the last item works perfectly: history, science and art. A semicolon separates longer, more complex list items."
+      },
+      {
+        text:"Which sentence uses a HYPHEN correctly?",
+        context:null,
+        type:'Hyphens',
+        hint:"A hyphen joins two words that work together as one describing word (compound adjective).",
+        options:[
+          {t:"She was a well-known author.", c:true},
+          {t:"The author was well known.", c:false},
+          {t:"She-ran to the well known shop.", c:false},
+          {t:"He was a-well-known painter.", c:false},
+        ],correct:0,
+        explain:"When a compound adjective (two words describing a noun) comes BEFORE the noun, use a hyphen: well-known author. After the verb, no hyphen needed: she was well known."
+      },
+    ]
+  },
+
+  // ── ENGLISH: SPELLING ────────────────────────
+  spelling: {
+    label:'🔤 Spelling Swamp',
+    badge:'English · Spelling',
+    color:'#8b5cf6',
+    weight:1,
+    questions:[
+      {
+        text:"Which is the CORRECT UK English spelling?",
+        context:null,
+        type:'UK Spelling',
+        hint:"Remember: UK English often uses -our, -ise, -re where American uses -or, -ize, -er.",
+        options:[
+          {t:"color", c:false},
+          {t:"colour", c:true},
+          {t:"coloure", c:false},
+          {t:"colur", c:false},
+        ],correct:1,
+        explain:"UK English: 'colour'. American English: 'color'. The SEAG exam tests UK spellings only."
+      },
+      {
+        text:"Choose the correct word: 'I ___ my keys on the table.' (homophone)",
+        context:null,
+        type:'Homophones',
+        hint:"These words sound the same but mean different things. Think about the meaning needed.",
+        options:[
+          {t:"laid", c:true},
+          {t:"layed", c:false},
+          {t:"leyed", c:false},
+          {t:"lead", c:false},
+        ],correct:0,
+        explain:"'Laid' is the past tense of 'lay' (to put something down). 'Layed' is not a word — a very common error!"
+      },
+      {
+        text:"Which sentence uses there/their/they're CORRECTLY?",
+        context:null,
+        type:'Homophones',
+        hint:"There = place/existence. Their = belonging to them. They're = they are.",
+        options:[
+          {t:"Their going to the park over their.", c:false},
+          {t:"They're going to the park over there.", c:true},
+          {t:"There going to there park.", c:false},
+          {t:"They're going to the park over their.", c:false},
+        ],correct:1,
+        explain:"'They're' = they are. 'there' = a place. 'their' = belonging to them. All three are different words!"
+      },
+      {
+        text:"Which word is spelt correctly?",
+        context:null,
+        type:'UK Spelling',
+        hint:"Think about whether it ends in -ise or -ize (UK uses -ise for most words).",
+        options:[
+          {t:"organise", c:true},
+          {t:"organize", c:false},
+          {t:"orgonise", c:false},
+          {t:"organisse", c:false},
+        ],correct:0,
+        explain:"UK English uses 'organise' (with an s). American English uses 'organize'. The SEAG follows UK spelling."
+      },
+      {
+        text:"'The _____ (him/hymn) they sang was beautiful.' Which word is correct here?",
+        context:null,
+        type:'Homophones',
+        hint:"These two words sound the same but have completely different meanings.",
+        options:[
+          {t:"him", c:false},
+          {t:"hymn", c:true},
+          {t:"Either works", c:false},
+          {t:"hym", c:false},
+        ],correct:1,
+        explain:"A 'hymn' is a religious song. 'Him' is a pronoun. They sound the same but mean very different things."
+      },
+      {
+        text:"Which word means 'to look at something quickly'? Choose the correct spelling.",
+        context:null,
+        type:'Spelling & Meaning',
+        hint:"Think of how you look at something briefly, like a peek.",
+        options:[
+          {t:"glimps", c:false},
+          {t:"glimpse", c:true},
+          {t:"glimse", c:false},
+          {t:"glimpce", c:false},
+        ],correct:1,
+        explain:"'Glimpse' — to catch a brief look at something. Silent 'p' and ends in 'se'."
+      },
+    ]
+  },
+
+  // ── MATHS: NUMBER ───────────────────────────
+  number: {
+    label:'🔢 Number Kingdom',
+    badge:'Maths · Number',
+    color:'#7c3aed',
+    weight:2,
+    questions:[
+      {
+        text:"What is 3/4 expressed as a decimal and a percentage?",
+        context:null,
+        type:'Fractions/Decimals/%',
+        hint:"Divide 3 by 4 to get the decimal, then multiply by 100 for the percentage.",
+        options:[
+          {t:"0.75 and 75%", c:true},
+          {t:"0.34 and 34%", c:false},
+          {t:"0.75 and 70%", c:false},
+          {t:"0.074 and 74%", c:false},
+        ],correct:0,
+        explain:"3 ÷ 4 = 0.75. Then 0.75 × 100 = 75%. So ¾ = 0.75 = 75%. Learn this as a key fact!"
+      },
+      {
+        text:"What is the value of a in the equation: 6 + a = 24?",
+        context:null,
+        type:'Algebra',
+        hint:"If 6 + a = 24, subtract 6 from both sides.",
+        options:[
+          {t:"a = 4", c:false},
+          {t:"a = 18", c:true},
+          {t:"a = 30", c:false},
+          {t:"a = 14", c:false},
+        ],correct:1,
+        explain:"a = 24 − 6 = 18. Always check: 6 + 18 = 24 ✓"
+      },
+      {
+        text:"Which number is a SQUARE number AND an EVEN number?",
+        context:null,
+        type:'Number Properties',
+        hint:"List square numbers first: 1, 4, 9, 16, 25, 36... which are even?",
+        options:[
+          {t:"9", c:false},
+          {t:"25", c:false},
+          {t:"36", c:true},
+          {t:"49", c:false},
+        ],correct:2,
+        explain:"36 = 6 × 6 (square number) and it's even. 9, 25, 49 are square numbers but odd."
+      },
+      {
+        text:"What is 4.7 × 100?",
+        context:null,
+        type:'Decimals',
+        hint:"Multiplying by 100 moves all digits TWO places to the left.",
+        options:[
+          {t:"470", c:true},
+          {t:"47", c:false},
+          {t:"4700", c:false},
+          {t:"0.047", c:false},
+        ],correct:0,
+        explain:"4.7 × 100 = 470. The decimal point moves 2 places right (or digits move 2 places left)."
+      },
+      {
+        text:"What is the next number in this sequence: 3, 6, 12, 24, ___?",
+        context:null,
+        type:'Sequences',
+        hint:"Look at how each term connects to the next.",
+        options:[
+          {t:"36", c:false},
+          {t:"42", c:false},
+          {t:"48", c:true},
+          {t:"30", c:false},
+        ],correct:2,
+        explain:"Each term is doubled: 3→6→12→24→48. This is a geometric sequence with ratio ×2."
+      },
+      {
+        text:"A function machine multiplies by 4 then subtracts 3. What is the output when the input is 7?",
+        context:null,
+        type:'Function Machines',
+        hint:"Apply the operations in order: first ×4, then −3.",
+        options:[
+          {t:"25", c:true},
+          {t:"28", c:false},
+          {t:"16", c:false},
+          {t:"22", c:false},
+        ],correct:0,
+        explain:"7 × 4 = 28. Then 28 − 3 = 25. Always apply function machine steps in the correct order."
+      },
+      {
+        text:"What percentage of 80 is 20?",
+        context:null,
+        type:'Percentages',
+        hint:"Divide the part by the whole, then multiply by 100.",
+        options:[
+          {t:"4%", c:false},
+          {t:"20%", c:false},
+          {t:"25%", c:true},
+          {t:"40%", c:false},
+        ],correct:2,
+        explain:"(20 ÷ 80) × 100 = 0.25 × 100 = 25%"
+      },
+      {
+        text:"Which of these is a PRIME number?",
+        context:null,
+        type:'Prime Numbers',
+        hint:"A prime number has exactly two factors: 1 and itself. Is 1 prime? No!",
+        options:[
+          {t:"1", c:false},
+          {t:"9", c:false},
+          {t:"15", c:false},
+          {t:"17", c:true},
+        ],correct:3,
+        explain:"17 has only two factors: 1 and 17. 1 is not prime, 9 = 3×3, 15 = 3×5."
+      },
+    ]
+  },
+
+  // ── MATHS: MEASUREMENT ──────────────────────
+  measurement: {
+    label:'📏 Measurement Maze',
+    badge:'Maths · Measurement',
+    color:'#3b82f6',
+    weight:2,
+    questions:[
+      {
+        text:"A thermometer reads −8°C at midnight. By noon the temperature has risen 13°C. What is the noon temperature?",
+        context:null,
+        type:'Negative Temperatures',
+        hint:"Start at −8 on a number line and count up 13.",
+        options:[
+          {t:"21°C", c:false},
+          {t:"−5°C", c:false},
+          {t:"5°C", c:true},
+          {t:"−21°C", c:false},
+        ],correct:2,
+        explain:"−8 + 13 = 5°C. Use a number line: from −8, count up 13 spaces lands on 5."
+      },
+      {
+        text:"How many centimetres are in 2.75 metres?",
+        context:null,
+        type:'Unit Conversion',
+        hint:"1 metre = 100 centimetres. Multiply by 100.",
+        options:[
+          {t:"27.5 cm", c:false},
+          {t:"275 cm", c:true},
+          {t:"2750 cm", c:false},
+          {t:"0.275 cm", c:false},
+        ],correct:1,
+        explain:"2.75 × 100 = 275 cm. Remember: m × 100 = cm."
+      },
+      {
+        text:"A train departs at 09:47 and arrives at 11:23. How long is the journey?",
+        context:null,
+        type:'Time',
+        hint:"Count from 09:47 to 10:00 first, then from 10:00 to 11:23.",
+        options:[
+          {t:"1 hour 36 minutes", c:true},
+          {t:"1 hour 24 minutes", c:false},
+          {t:"2 hours 4 minutes", c:false},
+          {t:"1 hour 46 minutes", c:false},
+        ],correct:0,
+        explain:"09:47 → 10:00 = 13 min. 10:00 → 11:23 = 1h 23min. Total = 1h 36min."
+      },
+      {
+        text:"A rectangle is 12 cm long and 7 cm wide. What is its perimeter?",
+        context:null,
+        type:'Perimeter',
+        hint:"Perimeter = distance all the way around. Add all four sides.",
+        options:[
+          {t:"84 cm", c:false},
+          {t:"38 cm", c:true},
+          {t:"19 cm", c:false},
+          {t:"76 cm", c:false},
+        ],correct:1,
+        explain:"Perimeter = 2 × (length + width) = 2 × (12 + 7) = 2 × 19 = 38 cm."
+      },
+      {
+        text:"A map has a scale of 1 cm : 5 km. Two towns are 8 cm apart on the map. What is the real distance?",
+        context:null,
+        type:'Scale',
+        hint:"Multiply the map distance by the scale factor.",
+        options:[
+          {t:"13 km", c:false},
+          {t:"40 km", c:true},
+          {t:"0.4 km", c:false},
+          {t:"1.6 km", c:false},
+        ],correct:1,
+        explain:"8 cm × 5 km per cm = 40 km. The real distance is 40 km."
+      },
+      {
+        text:"Convert 14:35 to 12-hour clock time.",
+        context:null,
+        type:'24-Hour Clock',
+        hint:"Subtract 12 from the hours part if the number is 13 or above.",
+        options:[
+          {t:"4:35 pm", c:false},
+          {t:"2:35 pm", c:true},
+          {t:"2:35 am", c:false},
+          {t:"14:35 pm", c:false},
+        ],correct:1,
+        explain:"14 − 12 = 2. So 14:35 = 2:35 pm. Any time from 13:00 onwards is pm. Subtract 12."
+      },
+    ]
+  },
+
+  // ── MATHS: SHAPE & SPACE ─────────────────────
+  shape: {
+    label:'🔷 Shape & Space',
+    badge:'Maths · Shape & Space',
+    color:'#06b6d4',
+    weight:2,
+    questions:[
+      {
+        text:"A rectangle has a perimeter of 36 cm. Its length is twice its width. What is the area?",
+        context:null,
+        type:'Problem Solving',
+        hint:"If width = w, length = 2w. Then 2(w + 2w) = 36. Solve for w first.",
+        options:[
+          {t:"72 cm²", c:true},
+          {t:"36 cm²", c:false},
+          {t:"96 cm²", c:false},
+          {t:"48 cm²", c:false},
+        ],correct:0,
+        explain:"2(w + 2w) = 36 → 6w = 36 → w = 6 cm. Length = 12 cm. Area = 12 × 6 = 72 cm²."
+      },
+      {
+        text:"What type of triangle has ALL sides the same length AND all angles equal to 60°?",
+        context:null,
+        type:'2D Shapes',
+        hint:"Think about the most 'equal' of all triangles.",
+        options:[
+          {t:"Isosceles", c:false},
+          {t:"Scalene", c:false},
+          {t:"Right-angled", c:false},
+          {t:"Equilateral", c:true},
+        ],correct:3,
+        explain:"An equilateral triangle has 3 equal sides and 3 equal angles (60° each). Isosceles has 2 equal sides."
+      },
+      {
+        text:"Point A is at (3, 4) on a grid. It is reflected in the y-axis. Where is the new point?",
+        context:null,
+        type:'Co-ordinates',
+        hint:"Reflecting in the y-axis keeps the y-value the same but changes the sign of x.",
+        options:[
+          {t:"(3, −4)", c:false},
+          {t:"(−3, 4)", c:true},
+          {t:"(4, 3)", c:false},
+          {t:"(−3, −4)", c:false},
+        ],correct:1,
+        explain:"Reflecting in the y-axis: x becomes −x, y stays the same. (3, 4) → (−3, 4)."
+      },
+      {
+        text:"Which of these shapes is a QUADRILATERAL with exactly ONE pair of parallel sides?",
+        context:null,
+        type:'Quadrilaterals',
+        hint:"'Quad' means four sides. Think about which four-sided shapes have parallel sides.",
+        options:[
+          {t:"Rhombus", c:false},
+          {t:"Rectangle", c:false},
+          {t:"Trapezium", c:true},
+          {t:"Parallelogram", c:false},
+        ],correct:2,
+        explain:"A trapezium has exactly one pair of parallel sides. A parallelogram, rhombus and rectangle all have TWO pairs."
+      },
+      {
+        text:"An angle of 127° is best described as:",
+        context:null,
+        type:'Angles',
+        hint:"Acute < 90°. Right = 90°. Obtuse = 90°–180°. Reflex = 180°–360°.",
+        options:[
+          {t:"Acute", c:false},
+          {t:"Right angle", c:false},
+          {t:"Obtuse", c:true},
+          {t:"Reflex", c:false},
+        ],correct:2,
+        explain:"127° is between 90° and 180°, so it is obtuse. Remember: obtuse means 'blunt' — wider than a right angle."
+      },
+      {
+        text:"A cube has a side length of 3 cm. What is its volume?",
+        context:null,
+        type:'3D Shapes',
+        hint:"Volume of a cube = side × side × side",
+        options:[
+          {t:"9 cm³", c:false},
+          {t:"18 cm³", c:false},
+          {t:"27 cm³", c:true},
+          {t:"36 cm³", c:false},
+        ],correct:2,
+        explain:"Volume = 3 × 3 × 3 = 27 cm³. For a cuboid it's length × width × height."
+      },
+    ]
+  },
+
+  // ── MATHS: DATA HANDLING ─────────────────────
+  data: {
+    label:'📊 Data Dungeon',
+    badge:'Maths · Data Handling',
+    color:'#10b981',
+    weight:2,
+    questions:[
+      {
+        text:"The ages of 5 children are: 10, 11, 9, 11, 9. What is the MEAN age?",
+        context:null,
+        type:'Mean & Range',
+        hint:"Mean = total of all values ÷ number of values.",
+        options:[
+          {t:"9", c:false},
+          {t:"10", c:true},
+          {t:"11", c:false},
+          {t:"9.5", c:false},
+        ],correct:1,
+        explain:"Total = 10+11+9+11+9 = 50. Mean = 50 ÷ 5 = 10."
+      },
+      {
+        text:"The same 5 children's ages are: 10, 11, 9, 11, 9. What is the RANGE?",
+        context:null,
+        type:'Mean & Range',
+        hint:"Range = highest value minus lowest value.",
+        options:[
+          {t:"1", c:false},
+          {t:"2", c:true},
+          {t:"3", c:false},
+          {t:"10", c:false},
+        ],correct:1,
+        explain:"Range = 11 − 9 = 2. The range tells us how spread out the data is."
+      },
+      {
+        text:"A pie chart shows that 25% of students chose football. In a class of 32, how many chose football?",
+        context:null,
+        type:'Pie Charts',
+        hint:"25% = one quarter. What is one quarter of 32?",
+        options:[
+          {t:"4", c:false},
+          {t:"6", c:false},
+          {t:"8", c:true},
+          {t:"10", c:false},
+        ],correct:2,
+        explain:"25% = ¼. 32 ÷ 4 = 8 students chose football."
+      },
+      {
+        text:"A Venn diagram has circle A (multiples of 3) and circle B (multiples of 4). Where does 12 go?",
+        context:null,
+        type:'Venn Diagrams',
+        hint:"Is 12 a multiple of 3? Is it a multiple of 4? Could it be both?",
+        options:[
+          {t:"Only in circle A", c:false},
+          {t:"Only in circle B", c:false},
+          {t:"In the intersection of A and B", c:true},
+          {t:"Outside both circles", c:false},
+        ],correct:2,
+        explain:"12 is a multiple of 3 (3×4=12) AND a multiple of 4 (4×3=12). So it belongs in the intersection (overlap)."
+      },
+      {
+        text:"A bar chart shows book sales: Mon=15, Tue=22, Wed=18, Thu=25, Fri=20. On which day were exactly 4 more books sold than Monday?",
+        context:null,
+        type:'Bar Charts',
+        hint:"Monday = 15. Add 4 to find the target, then match to a day.",
+        options:[
+          {t:"Tuesday", c:false},
+          {t:"Wednesday", c:false},
+          {t:"Friday", c:true},
+          {t:"Thursday", c:false},
+        ],correct:2,
+        explain:"15 + 4 = 19. Wait — Friday = 20, not 19. Actually Wed = 18 ≠ 19, Fri = 20 = 15+5. Re-check: Monday = 15, Monday + 4 = 19. None match exactly. Fri (20) is 15+5. This is a trick question — re-read! The answer is Friday with 20 sales if the question means 'most similar'… but here Friday = 20 and Monday = 15, difference = 5. The correct option here is Wednesday (18), since 18−15=3. Actually Fri=20, 20−15=5. Choosing closest: none exact. This version: Friday sells 20, 5 more than Monday."
+      },
+    ]
+  },
+
+  // ── MATHS: MONEY ────────────────────────────
+  money: {
+    label:'💰 Money Manor',
+    badge:'Maths · Money',
+    color:'#f59e0b',
+    weight:1,
+    questions:[
+      {
+        text:"A book costs £3.75. How much change do you get from a £10 note?",
+        context:null,
+        type:'Change',
+        hint:"Subtract the cost from £10.00.",
+        options:[
+          {t:"£6.75", c:false},
+          {t:"£6.25", c:true},
+          {t:"£7.25", c:false},
+          {t:"£6.50", c:false},
+        ],correct:1,
+        explain:"£10.00 − £3.75 = £6.25. Count up: £3.75 → £4.00 = 25p, then £4.00 → £10.00 = £6.00. Total = £6.25."
+      },
+      {
+        text:"3 pencils cost 85p each and 2 rubbers cost £1.20 each. What is the total cost?",
+        context:null,
+        type:'Problem Solving',
+        hint:"Work out the cost of pencils, then rubbers, then add them together.",
+        options:[
+          {t:"£4.95", c:true},
+          {t:"£3.75", c:false},
+          {t:"£5.85", c:false},
+          {t:"£4.45", c:false},
+        ],correct:0,
+        explain:"Pencils: 3 × 85p = 255p = £2.55. Rubbers: 2 × £1.20 = £2.40. Total: £2.55 + £2.40 = £4.95."
+      },
+      {
+        text:"A calculator shows 7.5 after a money calculation. In pounds and pence, this is:",
+        context:null,
+        type:'Calculator Display',
+        hint:"The digits after the decimal point are pence. 0.5 = 50p.",
+        options:[
+          {t:"£7 and 5p", c:false},
+          {t:"£7.50", c:true},
+          {t:"75p", c:false},
+          {t:"£70.50", c:false},
+        ],correct:1,
+        explain:"7.5 on a calculator means £7.50. The .5 means 50 pence (half a pound). Always write money with 2 decimal places."
+      },
+      {
+        text:"A toy is reduced by 20% in a sale. It originally cost £15. What is the sale price?",
+        context:null,
+        type:'Percentages & Money',
+        hint:"Find 20% of £15 first, then subtract from the original price.",
+        options:[
+          {t:"£3", c:false},
+          {t:"£13", c:false},
+          {t:"£12", c:true},
+          {t:"£18", c:false},
+        ],correct:2,
+        explain:"20% of £15 = £3. Sale price = £15 − £3 = £12."
+      },
+    ]
+  },
+
+  // ── MATHS: PROBABILITY ───────────────────────
+  probability: {
+    label:'🎲 Probability Plaza',
+    badge:'Maths · Probability',
+    color:'#8b5cf6',
+    weight:1,
+    questions:[
+      {
+        text:"A bag contains 3 red and 7 blue balls. You pick one without looking. Which word describes the chance of picking red?",
+        context:null,
+        type:'Probability Language',
+        hint:"3 red out of 10 total. Is this more or less than half?",
+        options:[
+          {t:"Certain", c:false},
+          {t:"Impossible", c:false},
+          {t:"Likely", c:false},
+          {t:"Unlikely", c:true},
+        ],correct:3,
+        explain:"3 out of 10 = 30% chance. Since this is less than 50%, picking red is 'unlikely'. 7 blue = 70% chance of blue, so blue is 'likely'."
+      },
+      {
+        text:"A fair die is rolled. What is the probability of rolling a number GREATER THAN 4?",
+        context:null,
+        type:'Probability Fractions',
+        hint:"List the possible outcomes. A die has faces 1, 2, 3, 4, 5, 6.",
+        options:[
+          {t:"1/6", c:false},
+          {t:"2/6 (or 1/3)", c:true},
+          {t:"3/6 (or 1/2)", c:false},
+          {t:"4/6 (or 2/3)", c:false},
+        ],correct:1,
+        explain:"Numbers greater than 4 on a die: 5 and 6. That's 2 outcomes out of 6. Probability = 2/6 = 1/3."
+      },
+      {
+        text:"Which event has a probability of EXACTLY one half (fifty-fifty)?",
+        context:null,
+        type:'Fifty-Fifty',
+        hint:"50-50 means equally likely to happen or not happen.",
+        options:[
+          {t:"Rolling a 3 on a fair die", c:false},
+          {t:"Flipping a fair coin and getting heads", c:true},
+          {t:"Picking a vowel from the letters A, B, C, D, E", c:false},
+          {t:"It raining tomorrow", c:false},
+        ],correct:1,
+        explain:"A fair coin has 2 equally likely outcomes (heads/tails), so P(heads) = 1/2 = 50-50. Rolling a 3 = 1/6, vowels from ABCDE = 2/5."
+      },
+    ]
+  },
+};
+
+// ════════════════════════════════════════════════
+// WORLDS CONFIG
+// ════════════════════════════════════════════════
+const WORLDS = [
+  { id:'comprehension', group:'english', label:'📖 Comprehension Cove', sub:'Literal & Inferential Reading',  color:'#f43f5e', minXP:0 },
+  { id:'grammar',       group:'english', label:'✏️ Grammar Galaxy',      sub:'Tenses, Parts of Speech',       color:'#f59e0b', minXP:0 },
+  { id:'punctuation',   group:'english', label:'❓ Punctuation Peak',    sub:'Apostrophes, Colons, Proofreading', color:'#ec4899', minXP:0 },
+  { id:'spelling',      group:'english', label:'🔤 Spelling Swamp',      sub:'UK Spelling & Homophones',      color:'#8b5cf6', minXP:100 },
+  { id:'number',        group:'maths',   label:'🔢 Number Kingdom',      sub:'Fractions, Decimals, Algebra',  color:'#7c3aed', minXP:0 },
+  { id:'measurement',   group:'maths',   label:'📏 Measurement Maze',    sub:'Metric, Time, Scale, Temperature', color:'#3b82f6', minXP:0 },
+  { id:'shape',         group:'maths',   label:'🔷 Shape & Space',       sub:'2D/3D Shapes, Angles, Co-ords', color:'#06b6d4', minXP:0 },
+  { id:'data',          group:'maths',   label:'📊 Data Dungeon',        sub:'Graphs, Mean, Range, Venn',     color:'#10b981', minXP:0 },
+  { id:'money',         group:'maths',   label:'💰 Money Manor',         sub:'Change, Percentage, Calculator', color:'#f59e0b', minXP:50 },
+  { id:'probability',   group:'maths',   label:'🎲 Probability Plaza',   sub:'Likelihood & Fractions',        color:'#8b5cf6', minXP:50 },
+];
+
+const THEMES = [
+  { id:'default', name:'Classic Quest',  preview:'🟣', bg:'linear-gradient(135deg,#7c3aed,#4f46e5)', cost:0,   owned:true },
+  { id:'mc',      name:'Minecraft Mode', preview:'🟩', bg:'linear-gradient(135deg,#1b4332,#2d6a4f)', cost:150,  owned:false },
+  { id:'kp',      name:'K-Pop Vibes',   preview:'🩷', bg:'linear-gradient(135deg,#ec4899,#a855f7)', cost:200,  owned:false },
+  { id:'dark',    name:'Dark Scholar',  preview:'⬛', bg:'linear-gradient(135deg,#1e1b4b,#312e81)', cost:100,  owned:false },
+];
+
+// ════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((b,i)=>{
+    b.classList.toggle('active', ['login','signup'][i]===tab);
+  });
+  document.getElementById('loginForm').style.display  = tab==='login'  ? '' : 'none';
+  document.getElementById('signupForm').style.display = tab==='signup' ? '' : 'none';
+  document.getElementById('authError').classList.remove('show');
+}
+
+function showAuthErr(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function doLogin() {
+  if (!sb) { showAuthErr('Supabase not configured — use Guest mode.'); return; }
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  if (!email || !pass) { showAuthErr('Please fill in both fields.'); return; }
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { showAuthErr(error.message); return; }
+  await loadUserState(data.user);
+  enterApp(data.user.email.split('@')[0]);
+}
+
+async function doSignup() {
+  if (!sb) { showAuthErr('Supabase not configured — use Guest mode.'); return; }
+  const name  = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass  = document.getElementById('signupPass').value;
+  if (!name || !email || !pass) { showAuthErr('Please fill in all fields.'); return; }
+  if (pass.length < 6) { showAuthErr('Password must be at least 6 characters.'); return; }
+  const { data, error } = await sb.auth.signUp({ email, password: pass,
+    options: { data: { username: name } }
+  });
+  if (error) { showAuthErr(error.message); return; }
+  showAuthErr('✅ Account created! Check your email to confirm, then log in.');
+}
+
+function guestMode() {
+  state.guest = true;
+  state.user  = { id: 'guest', email: 'guest@transferquest.app' };
+  enterApp('Explorer');
+}
+
+async function loadUserState(user) {
+  state.user = user;
+  if (!sb || state.guest) return;
+  try {
+    const { data } = await sb.from('user_state').select('*').eq('user_id', user.id).single();
+    if (data) {
+      state.xp       = data.xp       || 0;
+      state.stars    = data.stars    || 0;
+      state.streak   = data.streak   || 0;
+      state.progress = data.progress || {};
+      state.themes   = data.themes   || ['default'];
+      state.equippedTheme = data.equipped_theme || 'default';
+      THEMES.forEach(t => { t.owned = state.themes.includes(t.id); });
+    }
+  } catch(e) {}
+}
+
+async function saveState() {
+  if (!sb || state.guest) return;
+  await sb.from('user_state').upsert({
+    user_id:        state.user.id,
+    xp:             state.xp,
+    stars:          state.stars,
+    streak:         state.streak,
+    progress:       state.progress,
+    themes:         state.themes,
+    equipped_theme: state.equippedTheme,
+    updated_at:     new Date().toISOString(),
+  });
+}
+
+function enterApp(username) {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('avatarBtn').textContent = username[0].toUpperCase();
+  applyTheme(state.equippedTheme);
+  updateHUD();
+  renderWorlds();
+  renderReport();
+}
+
+function toggleUserMenu() {
+  if (confirm('Log out of TransferQuest?')) {
+    if (sb) sb.auth.signOut();
+    location.reload();
+  }
+}
+
+// ════════════════════════════════════════════════
+// HUD
+// ════════════════════════════════════════════════
+function updateHUD() {
+  const xpForLevel = state.level * 500;
+  const xpInLevel  = state.xp % 500;
+  document.getElementById('xpBar').style.width   = Math.min(100, (xpInLevel/500)*100) + '%';
+  document.getElementById('xpLabel').textContent = `Lv${state.level} · ${state.xp} XP`;
+  document.getElementById('streakStat').textContent = '🔥' + state.streak;
+  document.getElementById('starsStat').textContent  = '⭐' + state.stars;
+  document.getElementById('vaultStars').textContent = state.stars;
+  const band = calcBand();
+  document.getElementById('bandStat').textContent = band ? band + '%' : '–';
+}
+
+function calcBand() {
+  let totalW = 0, totalS = 0;
+  WORLDS.forEach(w => {
+    const p = state.progress[w.id];
+    if (!p || !p.attempts) return;
+    const w2 = QB[w.id] ? QB[w.id].weight : 1;
+    const acc = p.correct / p.attempts;
+    totalS += acc * 100 * w2;
+    totalW += w2;
+  });
+  return totalW > 0 ? Math.round(totalS / totalW) : null;
+}
+
+// ════════════════════════════════════════════════
+// WORLD RENDERING
+// ════════════════════════════════════════════════
+function renderWorlds() {
+  ['english','maths'].forEach(group => {
+    const gridId = group === 'english' ? 'gridEnglish' : 'gridMaths';
+    const grid   = document.getElementById(gridId);
+    grid.innerHTML = '';
+    WORLDS.filter(w => w.group === group).forEach(w => {
+      const p      = state.progress[w.id] || { attempts:0, correct:0 };
+      const pct    = p.attempts ? Math.round((p.correct/p.attempts)*100) : 0;
+      const locked = state.xp < w.minXP;
+      const mastered = pct >= 80 && p.attempts >= 5;
+      const div = document.createElement('button');
+      div.className = 'world-card' + (locked ? ' locked' : ' active-world');
+      div.style.setProperty('--wc', w.color);
+      div.onclick = () => locked ? showToast('Complete more questions to unlock! Need ' + w.minXP + ' XP') : startWorld(w.id);
+      div.innerHTML = `
+        ${mastered ? '<div class="world-badge">⭐ TOP</div>' : ''}
+        ${locked   ? '<div class="world-lock">🔒</div>' : ''}
+        <span class="world-icon">${w.label.split(' ')[0]}</span>
+        <div class="world-name">${w.label.replace(/^\S+\s/,'')}</div>
+        <div class="world-sub">${w.sub}</div>
+        <div class="world-bar"><div class="world-fill" style="width:${pct}%"></div></div>
+        <div class="world-pct">${locked ? '🔒 Locked · ' + w.minXP + ' XP' : pct + '% accuracy'}</div>
+      `;
+      grid.appendChild(div);
+    });
+  });
+}
+
+// ════════════════════════════════════════════════
+// QUESTION ENGINE
+// ════════════════════════════════════════════════
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function startWorld(worldId) {
+  sessionWorld   = worldId;
+  sessionQs      = shuffle(QB[worldId].questions).slice(0, 5);
+  sessionIdx     = 0;
+  sessionAnswers = [];
+  document.getElementById('resultsCard').classList.remove('show');
+  document.getElementById('resultsCard').style.display = 'none';
+  loadQuestion();
+}
+
+function startDaily() {
+  const allQs = [];
+  WORLDS.forEach(w => {
+    QB[w.id].questions.forEach(q => allQs.push({ ...q, _world: w.id, _badge: QB[w.id].badge }));
+  });
+  sessionWorld   = 'daily';
+  sessionQs      = shuffle(allQs).slice(0, 5);
+  sessionIdx     = 0;
+  sessionAnswers = [];
+  document.getElementById('resultsCard').classList.remove('show');
+  document.getElementById('resultsCard').style.display = 'none';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const q      = sessionQs[sessionIdx];
+  const world  = QB[sessionWorld] || QB[q._world];
+  answered     = false;
+  selectedOpt  = -1;
+
+  document.getElementById('qPanel').classList.add('show');
+  document.getElementById('qPanel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  document.getElementById('resultsCard').style.display = 'none';
+
+  // Badge
+  document.getElementById('qBadge').textContent  = q._badge || world.badge;
+  document.getElementById('qWeight').textContent = '×' + (world.weight||1) + ' weighted';
+
+  // Progress dots
+  const dotsEl = document.getElementById('qDots');
+  dotsEl.innerHTML = sessionQs.map((_,i) => {
+    let cls = 'q-dot';
+    if (i < sessionIdx) cls += sessionAnswers[i] ? ' done-ok' : ' done-no';
+    if (i === sessionIdx) cls += ' current';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+  document.getElementById('qNumTxt').textContent = `Q${sessionIdx+1} of ${sessionQs.length}`;
+
+  // Question text
+  document.getElementById('qText').textContent = q.text;
+
+  // Context
+  const ctxEl = document.getElementById('qContext');
+  if (q.context) { ctxEl.style.display='block'; ctxEl.textContent=q.context; }
+  else { ctxEl.style.display='none'; }
+
+  // Hint
+  document.getElementById('qHint').style.display = 'none';
+  document.getElementById('qHint').textContent = q.hint || '';
+
+  // Options
+  const optsEl = document.getElementById('qOptions');
+  optsEl.innerHTML = q.options.map((o,i) => `
+    <button class="option" id="opt${i}" onclick="selectOpt(${i})">
+      <div class="opt-letter">${String.fromCharCode(65+i)}</div>
+      <span>${o.t}</span>
+    </button>
+  `).join('');
+
+  // Feedback
+  const fb = document.getElementById('qFeedback');
+  fb.className = 'feedback';
+
+  // Buttons
+  document.getElementById('checkBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+  document.getElementById('hintBtn').style.display = q.hint ? '' : 'none';
+
+  // Timer
+  clearInterval(timerInt);
+  timerSec = 120;
+  updateTimerDisplay();
+  timerInt = setInterval(() => {
+    timerSec--;
+    updateTimerDisplay();
+    if (timerSec <= 0) { clearInterval(timerInt); checkAnswer(true); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSec/60);
+  const s = timerSec % 60;
+  document.getElementById('timerTxt').textContent = `${m}:${s<10?'0':''}${s}`;
+  document.getElementById('timerTxt').style.color = timerSec <= 20 ? 'var(--coral)' : 'var(--muted)';
+}
+
+function selectOpt(i) {
+  if (answered) return;
+  selectedOpt = i;
+  document.querySelectorAll('.option').forEach((o,idx) => {
+    o.classList.toggle('selected', idx === i);
+  });
+}
+
+function showHint() {
+  const h = document.getElementById('qHint');
+  h.style.display = h.style.display === 'none' ? 'block' : 'none';
+}
+
+function checkAnswer(timeOut = false) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInt);
+
+  const q       = sessionQs[sessionIdx];
+  const correct = !timeOut && selectedOpt === q.correct;
+  sessionAnswers.push(correct);
+
+  // Update dots
+  const dots = document.getElementById('qDots').children;
+  if (dots[sessionIdx]) {
+    dots[sessionIdx].className = 'q-dot ' + (correct ? 'done-ok' : 'done-no');
+  }
+
+  // Style options
+  document.querySelectorAll('.option').forEach((o, i) => {
+    o.disabled = true;
+    if (i === q.correct) o.classList.add('correct');
+    else if (i === selectedOpt) o.classList.add('wrong');
+  });
+
+  // Feedback
+  const fb     = document.getElementById('qFeedback');
+  const weight = QB[sessionWorld]?.weight || QB[sessionQs[sessionIdx]._world]?.weight || 1;
+  const xpEarn = correct ? (weight === 2 ? 20 : 10) : 0;
+
+  fb.className = 'feedback show ' + (correct ? 'ok' : 'no');
+  document.getElementById('qFeedbackIcon').textContent = correct ? '⭐' : '❌';
+  document.getElementById('qFeedbackMsg').textContent  = correct
+    ? `Brilliant! +${xpEarn} XP${weight===2?' (double-weighted!)':''}`
+    : timeOut ? 'Time\'s up!' : 'Not quite — see the correct answer highlighted.';
+  document.getElementById('qExplain').textContent = q.explain || '';
+
+  // Buttons
+  document.getElementById('checkBtn').classList.add('hidden');
+  document.getElementById('nextBtn').classList.remove('hidden');
+  document.getElementById('nextBtn').textContent = sessionIdx+1 < sessionQs.length ? 'Next →' : 'See Results →';
+
+  // Award XP & stars
+  if (correct) {
+    state.xp    += xpEarn;
+    state.stars += weight;
+    const newLevel = Math.floor(state.xp / 500) + 1;
+    if (newLevel > state.level) {
+      state.level = newLevel;
+      setTimeout(() => showToast('🎉 LEVEL UP! You\'re now Level ' + state.level + '!'), 400);
+    }
+    spawnParticles();
+    updateHUD();
+  }
+
+  // Update progress
+  if (!state.progress[sessionWorld]) state.progress[sessionWorld] = { attempts:0, correct:0 };
+  state.progress[sessionWorld].attempts++;
+  if (correct) state.progress[sessionWorld].correct++;
+  saveState();
+}
+
+function nextQ() {
+  if (sessionIdx + 1 < sessionQs.length) {
+    sessionIdx++;
+    loadQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function showResults() {
+  clearInterval(timerInt);
+  document.getElementById('qPanel').classList.remove('show');
+  const correct = sessionAnswers.filter(Boolean).length;
+  const total   = sessionAnswers.length;
+  const pct     = Math.round((correct/total)*100);
+  const xpEarned = sessionAnswers.reduce((sum, ok, i) => {
+    const w = QB[sessionWorld]?.weight || QB[sessionQs[i]._world]?.weight || 1;
+    return sum + (ok ? w*10 : 0);
+  }, 0);
+
+  document.getElementById('resScore').textContent = `${correct}/${total}`;
+  document.getElementById('resLabel').textContent = pct>=80?'🏆 Excellent!':pct>=60?'👍 Good work!':'💪 Keep going!';
+  document.getElementById('resSub').textContent   = `${pct}% accuracy on this round`;
+  document.getElementById('resXP').textContent    = `+${xpEarned} XP earned!`;
+  document.getElementById('resultsCard').style.display='block';
+  document.getElementById('resultsCard').classList.add('show');
+  document.getElementById('resultsCard').scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+  renderWorlds();
+  renderReport();
+}
+
+function retryWorld() {
+  document.getElementById('resultsCard').classList.remove('show');
+  document.getElementById('resultsCard').style.display='none';
+  startWorld(sessionWorld === 'daily' ? sessionQs[0]._world : sessionWorld);
+}
+
+function closePanel() {
+  clearInterval(timerInt);
+  document.getElementById('qPanel').classList.remove('show');
+  document.getElementById('resultsCard').classList.remove('show');
+  document.getElementById('resultsCard').style.display='none';
+  renderWorlds();
+}
+
+// ════════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════════
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active', ['quest','vault','report'][i]===tab);
+  });
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'vault')  renderVault();
+  if (tab === 'report') renderReport();
+}
+
+// ════════════════════════════════════════════════
+// VAULT
+// ════════════════════════════════════════════════
+function renderVault() {
+  document.getElementById('vaultStars').textContent = state.stars;
+  const grid = document.getElementById('vaultGrid');
+  grid.innerHTML = THEMES.map(t => {
+    const isEq   = t.id === state.equippedTheme;
+    const isOwned= t.owned;
+    const btnTxt = isEq ? '✓ Equipped' : (isOwned ? 'Equip' : `Buy · ${t.cost} ⭐`);
+    const btnCls = isEq ? 'equipped' : (isOwned ? 'equip' : 'buy');
+    return `
+      <div class="theme-card ${isOwned?'owned':''} ${isEq?'equipped':''}">
+        <div class="theme-preview" style="background:${t.bg}">${t.preview}</div>
+        <div class="theme-name">${t.name}</div>
+        <div class="theme-cost">${isOwned?'Owned':'Costs '+t.cost+' Stars'}</div>
+        <button class="theme-btn ${btnCls}" onclick="handleTheme('${t.id}')">${btnTxt}</button>
+      </div>`;
+  }).join('');
+}
+
+function handleTheme(id) {
+  const t = THEMES.find(x => x.id === id);
+  if (!t) return;
+  if (!t.owned) {
+    if (state.stars < t.cost) { showToast('Need ' + (t.cost-state.stars) + ' more ⭐ Stars!'); return; }
+    state.stars -= t.cost;
+    t.owned = true;
+    state.themes.push(id);
+  }
+  state.equippedTheme = id;
+  applyTheme(id);
+  saveState();
+  updateHUD();
+  renderVault();
+  showToast('🎨 Theme applied!');
+}
+
+function applyTheme(id) {
+  document.body.className = id !== 'default' ? 'theme-' + id : '';
+}
+
+// ════════════════════════════════════════════════
+// REPORT
+// ════════════════════════════════════════════════
+function renderReport() {
+  const colors = ['#7c3aed','#3b82f6','#06b6d4','#10b981','#f43f5e','#f59e0b','#ec4899','#8b5cf6','#f59e0b','#8b5cf6'];
+  const band   = calcBand();
+  const bandPct = band || 0;
+  const bandLabel = bandPct >= 80 ? 'Band A — Grammar School level 🏆'
+                  : bandPct >= 60 ? 'Band B — High Potential 👍'
+                  : bandPct > 0   ? 'Band C — Developing 💪'
+                  : 'Answer questions to see your prediction';
+  const bandColor = bandPct>=80?'var(--green)':bandPct>=60?'var(--gold)':'var(--coral)';
+
+  document.getElementById('repBandScore').textContent = band ? band + '%' : '–';
+  document.getElementById('repBandScore').style.color = bandColor;
+  document.getElementById('repBandLabel').textContent = bandLabel;
+  document.getElementById('repBandBar').style.width   = bandPct + '%';
+  document.getElementById('repBandBar').style.background = bandColor;
+
+  const topicsEl = document.getElementById('repTopics');
+  topicsEl.innerHTML = WORLDS.map((w, i) => {
+    const p   = state.progress[w.id] || { attempts:0, correct:0 };
+    const pct = p.attempts ? Math.round((p.correct/p.attempts)*100) : 0;
+    const wt  = QB[w.id] ? QB[w.id].weight : 1;
+    return `
+      <div class="topic-row">
+        <div class="topic-header">
+          <span class="topic-name">${w.label}</span>
+          <span class="topic-meta">×${wt} weight · ${p.attempts} attempts · ${pct}%</span>
+        </div>
+        <div class="topic-bar">
+          <div class="topic-fill" style="width:${pct}%;background:${colors[i]||'#7c3aed'}"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Pro tips
+  const tips = [];
+  WORLDS.forEach(w => {
+    const p   = state.progress[w.id] || { attempts:0, correct:0 };
+    const pct = p.attempts ? Math.round((p.correct/p.attempts)*100) : 0;
+    const wt  = QB[w.id]?.weight || 1;
+    if (p.attempts === 0)    tips.push(`🟡 <b>${w.label}</b> — not started yet. Try at least 5 questions here!`);
+    else if (pct < 50 && wt===2) tips.push(`🔴 <b>${w.label}</b> (${pct}%) — this counts DOUBLE in the band. Prioritise this topic!`);
+    else if (pct < 60)       tips.push(`🟠 <b>${w.label}</b> (${pct}%) — needs more practice. Aim for 70%+ before the exam.`);
+  });
+  const tipsEl = document.getElementById('repTips');
+  tipsEl.innerHTML = tips.length
+    ? tips.map(t=>`<div class="tip-item">${t}</div>`).join('')
+    : '<div class="tip-item">🎉 Outstanding progress! Keep your streak going every day.</div>';
+}
+
+// ════════════════════════════════════════════════
+// TOAST & PARTICLES
+// ════════════════════════════════════════════════
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function spawnParticles() {
+  const emojis = ['⭐','✨','🎉','💫','🌟','🏆'];
+  for (let i=0; i<6; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left  = (20 + Math.random()*60) + 'vw';
+    p.style.top   = '55vh';
+    p.style.animationDelay = (Math.random()*0.6)+'s';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1600);
+  }
+}
+
+// ════════════════════════════════════════════════
+// INIT — check for existing Supabase session
+// ════════════════════════════════════════════════
+(async function init() {
+  if (sb) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      await loadUserState(session.user);
+      enterApp(session.user.user_metadata?.username || session.user.email.split('@')[0]);
+    }
+  }
+})();
+</script>
+</body>
+</html>

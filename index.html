@@ -918,8 +918,9 @@ async function loadUserState(user){
   state.role=meta.role||'student';
   if(!sb||state.guest)return;
   try{
-    const{data}=await sb.from('user_state').select('*').eq('user_id',user.id).single();
+    const{data,error}=await sb.from('user_state').select('*').eq('user_id',user.id).single();
     if(data){
+      // Existing user - load their saved state
       state.xp=data.xp||0;state.stars=data.stars||0;state.streak=data.streak||0;
       state.level=data.level||1;state.qCount=data.q_count||0;
       state.progress=data.progress||{};state.themes=data.themes||['default'];
@@ -929,20 +930,42 @@ async function loadUserState(user){
       state.students=data.students||[];
       THEMES.forEach(t=>t.owned=state.themes.includes(t.id));
       state.seenQuestions=data.seen_questions||{};
+      // Keep username/email/role fresh
+      await sb.from('user_state').update({
+        username:state.username,email:user.email||'',role:state.role,
+        updated_at:new Date().toISOString()
+      }).eq('user_id',user.id);
+    } else {
+      // New user - create row immediately so they appear in admin panel
+      await sb.from('user_state').insert({
+        user_id:user.id,username:state.username,email:user.email||'',role:state.role,
+        xp:0,stars:0,streak:0,level:1,q_count:0,
+        progress:{},themes:['default'],equipped_theme:'default',
+        avatar:'🧙',avatar_color:'#ede9fe',
+        school:'',exam_date:'',students:{},seen_questions:{},
+        banned:false,
+        created_at:new Date().toISOString(),updated_at:new Date().toISOString(),
+      });
     }
-  }catch(e){}
+  }catch(e){console.warn('loadUserState error:',e);}
 }
 async function saveState(){
   if(!sb||state.guest)return;
-  await sb.from('user_state').upsert({
-    user_id:state.user.id,xp:state.xp,stars:state.stars,streak:state.streak,
-    level:state.level,q_count:state.qCount,progress:state.progress,
-    themes:state.themes,equipped_theme:state.equippedTheme,
-    avatar:state.avatar,avatar_color:state.avatarColor,
-    school:state.school,exam_date:state.examDate,students:state.students,
-    seen_questions:state.seenQuestions,
-    updated_at:new Date().toISOString(),
-  });
+  try{
+    await sb.from('user_state').upsert({
+      user_id:state.user.id,
+      username:state.username,
+      email:state.user.email||'',
+      role:state.role||'student',
+      xp:state.xp,stars:state.stars,streak:state.streak,
+      level:state.level,q_count:state.qCount,progress:state.progress,
+      themes:state.themes,equipped_theme:state.equippedTheme,
+      avatar:state.avatar,avatar_color:state.avatarColor,
+      school:state.school,exam_date:state.examDate,students:state.students,
+      seen_questions:state.seenQuestions,
+      updated_at:new Date().toISOString(),
+    });
+  }catch(e){console.warn('saveState error:',e);}
 }
 
 // ══════════════════════════════════════════════
